@@ -2,10 +2,11 @@
   "name": "learning-octonode",
   "version": "1.0.0",
   "description": "Learning how to use octonode",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build": "babel src -d lib"
   },
   "repository": {
     "type": "git",
