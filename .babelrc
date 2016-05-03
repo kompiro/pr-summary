@@ -1,1 +1,1 @@
-{ "presets": ["es2015", "polyfill"] }
+{ "presets": ["es2015"] }
