@@ -1,24 +1,28 @@
 {
-  "name": "learning-octonode",
+  "name": "pr-summary",
   "version": "1.0.0",
-  "description": "Learning how to use octonode",
-  "main": "src/index.js",
+  "description": "Summarize Pull Request between specified refs",
+  "main": "src/pr-summary.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint",
-    "build": "babel src -d lib --source-maps inline",
-    "js": "babel-node src/index.js"
+    "prepublish": "babel src -d lib --source-maps inline",
+    "js": "babel-node src/pr-summary.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kompiro/learning-octonode.git"
+    "url": "git+https://github.com/kompiro/pr-summary.git"
+  },
+  "keywords": ["GitHub","Pull Request"],
+  "bin": {
+    "pr-summary" : "lib/pr-summary.js"
   },
   "author": "Hiroki Kondo",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kompiro/learning-octonode/issues"
+    "url": "https://github.com/kompiro/pr-summary/issues"
   },
-  "homepage": "https://github.com/kompiro/learning-octonode#readme",
+  "homepage": "https://github.com/kompiro/pr-summary#readme",
   "dependencies": {
     "commander": "^2.9.0",
     "octonode": "^0.7.5"
