@@ -157,7 +157,7 @@ const prsummary = (repo, base, head) => {
   });
 };
 
-program.version('1.0.0')
+program.version('1.0.1')
   .usage('[options] <repo> <base> <head>')
   .option('-v, --verbose', 'show detail of requests')
   .action(prsummary);
