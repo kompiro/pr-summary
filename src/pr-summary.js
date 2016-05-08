@@ -68,7 +68,7 @@ const listPRs = (prInfos) => {
 
 const listPR = (prInfo) => {
   if(prInfo == null) return;
-  console.log(`#${prInfo.number} ${prInfo.title} by ${prInfo.user.login}`);
+  console.info(`#${prInfo.number} ${prInfo.title} by ${prInfo.user.login}`);
 };
 
 const trackCommits = (mergeBaseSha, commitsByHash, current) => {
@@ -109,8 +109,8 @@ const showPRs = (repo, mergeBaseSha, response) => {
     return left.concat(right);
   });
   if(program.verbose) {
-    console.log(`mergeBaseSha: ${mergeBaseSha}`);
-    console.log(`commits length: ${commits.length}`);
+    console.info(`mergeBaseSha: ${mergeBaseSha}`);
+    console.info(`commits length: ${commits.length}`);
   }
   const commitsByHash = {};
   for ( const commit of commits ) {
@@ -119,7 +119,7 @@ const showPRs = (repo, mergeBaseSha, response) => {
   const prs = [];
   const trackedCommits = trackCommits(mergeBaseSha, commitsByHash, commits[0]);
   if(program.verbose) {
-    console.log(`trackedCommits length: ${trackedCommits.length}`);
+    console.info(`trackedCommits length: ${trackedCommits.length}`);
   }
   for (const commit of trackedCommits) {
     const prno = getPRNo(commit);
@@ -137,15 +137,15 @@ const showPRs = (repo, mergeBaseSha, response) => {
 
 const prsummary = (repo, base, head) => {
   if(program.verbose){
-    console.log('verbose mode start:');
-    console.log(`repo: ${repo} base: ${base} head: ${head}`);
+    console.info('verbose mode start:');
+    console.info(`repo: ${repo} base: ${base} head: ${head}`);
     request.debug = true;
   }
   const ghrepo = client.repo(repo);
   compare(ghrepo, base, head).then( (response) => {
     const mergeBaseCommitSha = response.merge_base_commit.sha;
     if(program.verbose){
-      console.log(`merge base: ${mergeBaseCommitSha}`);
+      console.info(`merge base: ${mergeBaseCommitSha}`);
     }
     const requests = [];
     for (let page = 1; page < 10 + 1; page++) {
