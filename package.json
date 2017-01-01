@@ -1,6 +1,6 @@
 {
   "name": "pr-summary",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Summarize Pull Request between specified refs",
   "main": "src/pr-summary.js",
   "scripts": {
