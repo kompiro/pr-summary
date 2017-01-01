@@ -1,13 +1,12 @@
 {
   "name": "pr-summary",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Summarize Pull Request between specified refs",
-  "main": "src/pr-summary.js",
+  "main": "src/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint",
     "prepublish": "babel src -d lib --source-maps inline",
-    "js": "babel-node src/pr-summary.js"
+    "js": "babel-node src/main.js"
   },
   "repository": {
     "type": "git",
@@ -21,7 +20,7 @@
     "lib"
   ],
   "bin": {
-    "pr-summary" : "./lib/pr-summary.js"
+    "pr-summary" : "./lib/main.js"
   },
   "author": "Hiroki Kondo",
   "license": "MIT",
@@ -32,7 +31,7 @@
   "dependencies": {
     "babel-polyfill": "^6.8.0",
     "commander": "^2.9.0",
-    "octonode": "^0.7.5"
+    "github": "^7.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.8.0",
