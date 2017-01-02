@@ -1,6 +1,21 @@
 #!/usr/bin/env node
 'use strict';
 
-import {getPRInfo} from './pr-summary';
+import {GitHubClient} from './github_client';
+import GitHubAPI from 'github';
 
-module.exports = getPRInfo;
+module.exports = {
+  createClient: (token) => {
+    const client = new GitHubAPI();
+    client.authenticate({
+      type: 'token',
+      token
+    });
+    return new GitHubClient(client);
+  },
+  getPRInfo: (token, owner, repo, number) => {
+    const client = module.exports.createClient(token);
+    return client.getPRInfo(owner, repo, number);
+  }
+};
+
