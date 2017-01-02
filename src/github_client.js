@@ -9,6 +9,49 @@ export class GitHubClient {
     this.client = client;
   }
 
+  prepareRelease(owner, repo, base, head) {
+    const title = `Prepare to deploy ${head} to ${base}`;
+    return this.client.pullRequests.create({
+      owner,
+      repo,
+      title,
+      head,
+      base
+    }).then((pr) => {
+      return this.getPRInfo(owner, repo, pr.number);
+    }).then((prInfo) => {
+      const body = this.renderBody(prInfo);
+      return this.client.pullRequests.update({
+        owner,
+        repo,
+        base,
+        number: prInfo.number,
+        body
+      });
+    });
+  }
+
+  renderBody(prInfo) {
+    let body = '## Contributors\n';
+    const rendered = [];
+    prInfo.commits.map((commit) => {
+      const user = commit.author.login;
+      if (rendered.includes(user) === false && user.trim() !== '') {
+        body += `- [ ] @${user}\n`;
+        rendered.push(user);
+      }
+    });
+
+    body += '\n';
+
+    body += '## Pull Requests\n';
+    prInfo.prs.map((pr) => {
+      body += `- #${pr.number} ${pr.title} by @${pr.user.login}`;
+    });
+
+    return body;
+  }
+
   getCommitsFromPullRequest(owner, repo, number) {
     const commits = [];
     const pager = (res) => {
@@ -62,7 +105,11 @@ export class GitHubClient {
 
   getPRInfo(owner, repo, number) {
     return new Promise((resolve) => {
-      const prInfo = {};
+      const prInfo = {
+        owner,
+        repo,
+        number
+      };
       this.getCommitsFromPullRequest(owner, repo, number).
         then((commits) => {
           prInfo.commits = commits;
@@ -72,6 +119,9 @@ export class GitHubClient {
         then((prs) => {
           prInfo.prs = prs;
           resolve(prInfo);
+        }).
+        catch((err)=> {
+          console.error(err.message);
         });
     });
   }

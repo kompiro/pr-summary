@@ -16,6 +16,10 @@ module.exports = {
   getPRInfo: (token, owner, repo, number) => {
     const client = module.exports.createClient(token);
     return client.getPRInfo(owner, repo, number);
+  },
+  prepareRelease: (token, owner, repo, base, head) => {
+    const client = module.exports.createClient(token);
+    return client.prepareRelease(owner, repo, base, head);
   }
 };
 
