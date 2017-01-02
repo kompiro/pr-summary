@@ -1,11 +1,11 @@
 {
   "name": "pr-summary",
-  "version": "2.0.1",
-  "description": "Summarize Pull Request between specified refs",
-  "main": "src/main.js",
+  "version": "2.1.0",
+  "description": "Summarize Pull Request",
+  "main": "lib",
   "scripts": {
     "lint": "eslint",
-    "prepublish": "babel src -d lib --source-maps inline",
+    "prepublish": "rm -r lib;babel src -d lib --source-maps inline",
     "js": "babel-node src/main.js"
   },
   "repository": {
