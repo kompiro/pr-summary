@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-import {getPRInfo} from './pr-summary';
+import {GitHubClient} from './github_client';
 
-module.exports = getPRInfo;
+module.exports = GitHubClient;

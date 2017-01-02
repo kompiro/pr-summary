@@ -2,10 +2,28 @@
 'use strict';
 
 import program from 'commander';
-import {getPRInfo} from './pr-summary';
+import GitHubAPI from 'github';
+import {GitHubClient} from './github_client';
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+if (!GITHUB_TOKEN) {
+  console.error(
+`You must set Environment Variable: GITHUB_TOKEN.
+Get the token at https://github.com/settings/tokens.`
+  );
+  process.exit(1);
+}
 
 const prsummary = (owner, repo, number) => {
-  getPRInfo(owner, repo, number).
+  const client = new GitHubAPI();
+
+  client.authenticate({
+    type: 'token',
+    token: GITHUB_TOKEN
+  });
+
+  const ghClient = new GitHubClient(client);
+  ghClient.getPRInfo(owner, repo, number).
     then((prInfo) => {
       console.info('## Contributors\n');
       const rendered = [];
@@ -28,7 +46,7 @@ const prsummary = (owner, repo, number) => {
 };
 
 program.version('2.0.0').
-  usage('<owner> <repo> <number>').
+  usage('pr-summary <owner> <repo> <number>').
   action(prsummary);
 
 program.parse(process.argv);
