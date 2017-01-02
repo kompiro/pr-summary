@@ -10,8 +10,8 @@ export class GitHubClient {
   }
 
   prepareRelease(owner, repo, base, head) {
-    const title = `Prepare to deploy ${base} to ${head}`;
-    this.client.pullRequests.create({
+    const title = `Prepare to deploy ${head} to ${base}`;
+    return this.client.pullRequests.create({
       owner,
       repo,
       title,
@@ -24,11 +24,10 @@ export class GitHubClient {
       return this.client.pullRequests.update({
         owner,
         repo,
+        base,
         number: prInfo.number,
         body
       });
-    }).then((pr) => {
-      console.info(`created: ${pr.html_url}`);
     });
   }
 
@@ -38,7 +37,7 @@ export class GitHubClient {
     prInfo.commits.map((commit) => {
       const user = commit.author.login;
       if (rendered.includes(user) === false && user.trim() !== '') {
-        body += `${user}\n`;
+        body += `- [ ] @${user}\n`;
         rendered.push(user);
       }
     });
@@ -47,7 +46,7 @@ export class GitHubClient {
 
     body += '## Pull Requests\n';
     prInfo.prs.map((pr) => {
-      body += `#${pr.number} ${pr.title} by ${pr.user.login}`;
+      body += `- #${pr.number} ${pr.title} by @${pr.user.login}`;
     });
 
     return body;
@@ -120,6 +119,9 @@ export class GitHubClient {
         then((prs) => {
           prInfo.prs = prs;
           resolve(prInfo);
+        }).
+        catch((err)=> {
+          console.error(err.message);
         });
     });
   }
