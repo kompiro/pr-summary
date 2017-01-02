@@ -13,27 +13,34 @@ export class GitHubClient {
   }
 
   prepareRelease(owner, repo, base, head) {
-    const title = `Prepare to deploy ${head} to ${base}`;
-    return this.client.pullRequests.create({
-      owner,
-      repo,
-      title,
-      head,
-      base
-    }).then((pr) => {
-      return this.getPRInfo(owner, repo, pr.number);
-    }).then((prInfo) => {
-      const template = fs.readFileSync(this.templatePath, 'utf8');
-      const body = eco.render(template, {
-        prInfo
-      });
-      return this.client.pullRequests.update({
+    return new Promise((resolve, reject) => {
+      const title = `Prepare to deploy ${head} to ${base}`;
+      return this.client.pullRequests.create({
         owner,
         repo,
-        base,
-        number: prInfo.number,
-        body
-      });
+        title,
+        head,
+        base
+      }).then((pr) => {
+        return this.getPRInfo(owner, repo, pr.number);
+      }).then((prInfo) => {
+        const template = fs.readFileSync(this.templatePath, 'utf8');
+        const body = eco.render(template, {
+          prInfo
+        });
+        this.client.pullRequests.update({
+          owner,
+          repo,
+          base,
+          number: prInfo.number,
+          body
+        }).then((pr) => {
+          pr.commits = prInfo.commits;
+          pr.contributors = prInfo.contributors;
+          pr.prs = prInfo.prs;
+          resolve(pr);
+        }).catch(reject);
+      }).catch(reject);
     });
   }
 
@@ -81,8 +88,6 @@ export class GitHubClient {
           return new Date(a.merged_at) - new Date(b.merged_at);
         });
 
-        prsToDeploy.pop(); // Remove myself
-
         resolve(prsToDeploy);
       });
     });
@@ -110,6 +115,7 @@ export class GitHubClient {
         }).
         then(this.fetchPullRequests.bind(this, owner, repo)).
         then((prs) => {
+          prs.pop(); // Remove myself
           prInfo.prs = prs;
           resolve(prInfo);
         }).
