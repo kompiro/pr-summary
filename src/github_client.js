@@ -115,7 +115,6 @@ export class GitHubClient {
         }).
         then(this.fetchPullRequests.bind(this, owner, repo)).
         then((prs) => {
-          prs.pop(); // Remove myself
           prInfo.prs = prs;
           resolve(prInfo);
         }).
