@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "eslint",
     "prepublish": "rm -r lib;babel src -d lib --source-maps inline",
-    "js": "babel-node src/main.js"
+    "js": "babel-node src/main.js",
+    "test-js": "babel-node test.js"
   },
   "repository": {
     "type": "git",
