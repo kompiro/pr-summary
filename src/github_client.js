@@ -2,11 +2,14 @@
 'use strict';
 
 import 'babel-polyfill';
+import eco from 'eco';
+import fs from 'fs';
 
 export class GitHubClient {
 
-  constructor(client) {
+  constructor(client, template) {
     this.client = client;
+    this.templatePath = template || __dirname + '/release.eco';
   }
 
   prepareRelease(owner, repo, base, head) {
@@ -20,7 +23,10 @@ export class GitHubClient {
     }).then((pr) => {
       return this.getPRInfo(owner, repo, pr.number);
     }).then((prInfo) => {
-      const body = this.renderBody(prInfo);
+      const template = fs.readFileSync(this.templatePath, 'utf8');
+      const body = eco.render(template, {
+        prInfo
+      });
       return this.client.pullRequests.update({
         owner,
         repo,
@@ -29,27 +35,6 @@ export class GitHubClient {
         body
       });
     });
-  }
-
-  renderBody(prInfo) {
-    let body = '## Contributors\n';
-    const rendered = [];
-    prInfo.commits.map((commit) => {
-      const user = commit.author.login;
-      if (rendered.includes(user) === false && user.trim() !== '') {
-        body += `- [ ] @${user}\n`;
-        rendered.push(user);
-      }
-    });
-
-    body += '\n';
-
-    body += '## Pull Requests\n';
-    prInfo.prs.map((pr) => {
-      body += `- #${pr.number} ${pr.title} by @${pr.user.login}`;
-    });
-
-    return body;
   }
 
   getCommitsFromPullRequest(owner, repo, number) {
@@ -113,6 +98,14 @@ export class GitHubClient {
       this.getCommitsFromPullRequest(owner, repo, number).
         then((commits) => {
           prInfo.commits = commits;
+          const contributors = [];
+          commits.map((commit) => {
+            const user = commit.author.login;
+            if (contributors.includes(user) === false && user.trim() !== '') {
+              contributors.push(user);
+            }
+          });
+          prInfo.contributors = contributors;
           return commits;
         }).
         then(this.fetchPullRequests.bind(this, owner, repo)).

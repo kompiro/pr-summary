@@ -5,20 +5,20 @@ import {GitHubClient} from './github_client';
 import GitHubAPI from 'github';
 
 module.exports = {
-  createClient: (token) => {
+  createClient: (config) => {
     const client = new GitHubAPI();
     client.authenticate({
       type: 'token',
-      token
+      token: config.token
     });
-    return new GitHubClient(client);
+    return new GitHubClient(client, config.template);
   },
-  getPRInfo: (token, owner, repo, number) => {
-    const client = module.exports.createClient(token);
+  getPRInfo: (config, owner, repo, number) => {
+    const client = module.exports.createClient(config);
     return client.getPRInfo(owner, repo, number);
   },
-  prepareRelease: (token, owner, repo, base, head) => {
-    const client = module.exports.createClient(token);
+  prepareRelease: (config, owner, repo, base, head) => {
+    const client = module.exports.createClient(config);
     return client.prepareRelease(owner, repo, base, head);
   }
 };
