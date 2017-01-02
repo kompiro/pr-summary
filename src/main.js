@@ -21,10 +21,8 @@ const prsummary = (owner, repo, number) => {
 
       console.info('## Pull Requests\n');
       prInfo.prs.map((pr) => {
-        if (pr.pull_request) {
-          const message = `#${pr.number} ${pr.title} by ${pr.user.login}`;
-          console.info(message);
-        }
+        const message = `#${pr.number} ${pr.title} by ${pr.user.login}`;
+        console.info(message);
       });
     });
 };

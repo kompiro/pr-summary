@@ -36,33 +36,39 @@ const getCommitsFromPullRequest = (owner, repo, number) => {
   }).then(pager);
 };
 
-const prRegex = /^Merge pull request #(\d+) from (.*)/;
-const filterMerged = (commits) => {
-  return new Promise((resolve)=>{
-    const mergeCommits = commits.map((current) => {
-      const message = current.commit.message;
-      const matched = message.match(prRegex);
-      if (matched) {
-        return matched[1];
-      }
-      return null;
-    }).filter((number)=>{
-      return number != null;
+const fetchPullRequests = (owner, repo, commits) => {
+  return new Promise((resolve) => {
+    const shas = commits.map((commit) => {
+      return commit.sha;
     });
-    resolve(mergeCommits);
-  });
-};
-
-const fetchPullRequests = (owner, repo, prNumbers) => {
-  const getPRInfos = prNumbers.map((prNumber)=>{
-    // Pull Request is an issue type. But issue is not a pull request.
-    return client.issues.get({
+    client.pullRequests.getAll({
       owner,
       repo,
-      number: prNumber
+      state: 'closed',
+      sort: 'updated',
+      direction: 'desc',
+      per_page: 100
+    }).then((prs) => {
+      const mergedPRs = prs.filter((pr) => {
+        return pr.merged_at !== null;
+      });
+
+      const prsToDeploy = mergedPRs.reduce((result, pr) => {
+        if (shas.indexOf(pr.head.sha) !== -1) {
+          result.push(pr);
+        }
+        return result;
+      }, []);
+
+      prsToDeploy.sort((a, b) => {
+        return new Date(a.merged_at) - new Date(b.merged_at);
+      });
+
+      prsToDeploy.pop(); // Remove myself
+
+      resolve(prsToDeploy);
     });
   });
-  return Promise.all(getPRInfos);
 };
 
 export const getPRInfo = (owner, repo, number) => {
@@ -73,7 +79,6 @@ export const getPRInfo = (owner, repo, number) => {
         prInfo.commits = commits;
         return commits;
       }).
-      then(filterMerged).
       then(fetchPullRequests.bind(this, owner, repo)).
       then((prs) => {
         prInfo.prs = prs;
