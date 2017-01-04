@@ -1,9 +1,0 @@
-## Contributors
-<% for contributor in @prInfo.contributors: %>
-  - [ ] @<%= contributor %>
-<% end %>
-
-## Merged Pull Requests
-<% for pr in @prInfo.prs: %>
-  - #<%= pr.number %> <%= pr.title %> by @<%= pr.user.login %>
-<% end %>
