@@ -7,7 +7,8 @@
     "lint": "eslint",
     "prepublish": "rm -r lib;babel src -d lib --source-maps inline",
     "js": "babel-node src/main.js",
-    "test-js": "babel-node test.js"
+    "test-js": "babel-node test.js",
+    "test": "NODE_ENV=test mocha --compilers js:babel-register"
   },
   "repository": {
     "type": "git",
