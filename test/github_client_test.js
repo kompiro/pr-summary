@@ -27,12 +27,14 @@ describe('GitHubClient', () => {
     assert(sut.client.auth.token === 'GITHUB_TOKEN');
   });
 
+  const ENTRY_POINT_OF_GITHUB = 'https://api.github.com/';
+
   describe('#getCommitsFromPullRequest', () => {
 
     const ENTRY_POINT_OF_PR_COMMITS = '/repos/kompiro/awesome-app/pulls/3/commits';
 
     context('no paging', () => {
-      nock('https://api.github.com/').
+      nock(ENTRY_POINT_OF_GITHUB).
       get(ENTRY_POINT_OF_PR_COMMITS).
       reply(200, [
         { sha: 'sha0' },
@@ -49,7 +51,7 @@ describe('GitHubClient', () => {
     });
 
     context('have paging', () => {
-      nock('https://api.github.com/').
+      nock(ENTRY_POINT_OF_GITHUB).
       get(ENTRY_POINT_OF_PR_COMMITS).
       reply(200, [
         { sha: 'sha0' },
@@ -73,6 +75,10 @@ describe('GitHubClient', () => {
         }).catch(done);
       });
     });
+
+  });
+
+  describe('#fetchPullRequests', () => {
 
   });
 
