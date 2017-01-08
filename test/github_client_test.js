@@ -79,7 +79,42 @@ describe('GitHubClient', () => {
   });
 
   describe('#fetchPullRequests', () => {
+    const ENTRY_POINT_OF_PULL_REQUESTS = '/repos/kompiro/awesome-app/pulls';
 
+    context('pulls are not found', () => {
+      nock(ENTRY_POINT_OF_GITHUB).
+      get(ENTRY_POINT_OF_PULL_REQUESTS).
+      query(true).
+      reply(200, [
+        { number: 1, head: {sha: 'sha0' } ,merged_at: '2017-01-08T21:56:36+09:00' },
+        { number: 2, head: {sha: 'sha1' } ,merged_at: '2017-01-08T21:56:36+09:00' }
+      ]);
+
+      it ('cannot resolve pull request', (done) => {
+        sut.fetchPullRequests('kompiro', 'awesome-app', [{ sha: 'not found'}]).then((prs) => {
+          assert(prs.length === 0);
+          done();
+        }).catch(done);
+      });
+
+    });
+
+    context('pull is found', () => {
+      nock(ENTRY_POINT_OF_GITHUB).
+      get(ENTRY_POINT_OF_PULL_REQUESTS).
+      query(true).
+      reply(200, [
+        { number: 1, head: {sha: 'sha0' } ,merged_at: '2017-01-08T21:56:36+09:00' },
+        { number: 2, head: {sha: 'sha1' } ,merged_at: '2017-01-08T21:56:36+09:00' }
+      ]);
+
+      it ('resolves pull request', (done) => {
+        sut.fetchPullRequests('kompiro', 'awesome-app', [{ sha: 'sha0'}]).then((prs) => {
+          assert(prs.length === 1);
+          done();
+        }).catch(done);
+      });
+    });
   });
 
 });
