@@ -2,14 +2,14 @@
 'use strict';
 
 import 'babel-polyfill';
-import eco from 'eco';
+import ejs from 'ejs';
 import fs from 'fs';
 
 export class GitHubClient {
 
   constructor(client, template) {
     this.client = client;
-    this.templatePath = template || __dirname + '/release.eco';
+    this.templatePath = template || __dirname + '/release.ejs';
   }
 
   prepareRelease(owner, repo, base, head) {
@@ -25,9 +25,7 @@ export class GitHubClient {
         return this.getPRInfo(owner, repo, pr.number);
       }).then((prInfo) => {
         const template = fs.readFileSync(this.templatePath, 'utf8');
-        const body = eco.render(template, {
-          prInfo
-        });
+        const body = ejs.render(template, { prInfo: prInfo });
         this.client.pullRequests.update({
           owner,
           repo,
