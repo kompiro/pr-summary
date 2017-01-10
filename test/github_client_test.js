@@ -8,8 +8,8 @@ import nock from 'nock';
 import GitHubAPI from 'github';
 import {GitHubClient} from '../src/github_client';
 
-let sut;
 describe('GitHubClient', () => {
+  let sut;
 
   beforeEach(() => {
     const api = new GitHubAPI();
