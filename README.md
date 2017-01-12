@@ -1,6 +1,8 @@
 # pr-summary
 
-`pr-summary` is a command to summarize merged Pull Requests between specified refs. 
+[![npm version](https://badge.fury.io/js/pr-summary.svg)](https://badge.fury.io/js/pr-summary)
+
+`pr-summary` is a command to summarize merged Pull Requests between specified refs.
 
 ## Getting Started
 
@@ -34,7 +36,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/kompiro/pr-summary/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/kompiro/pr-summary/tags).
 
 ## Authors
 
