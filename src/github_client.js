@@ -103,7 +103,14 @@ export class GitHubClient {
           prInfo.commits = commits;
           const contributors = [];
           commits.map((commit) => {
-            const user = commit.author.login;
+            let user;
+            const author = commit.author;
+            if (author) {
+              user = author.login;
+            } else {
+              const gitCommit = commit.commit;
+              user = gitCommit.author.name;
+            }
             if (contributors.includes(user) === false && user.trim() !== '') {
               contributors.push(user);
             }
