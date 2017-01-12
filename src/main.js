@@ -5,6 +5,9 @@ import program from 'commander';
 import GitHubAPI from 'github';
 import {GitHubClient} from './github_client';
 
+import ejs from 'ejs';
+import fs from 'fs';
+
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 if (!GITHUB_TOKEN) {
   console.error(
@@ -25,28 +28,17 @@ const prsummary = (owner, repo, number) => {
   const ghClient = new GitHubClient(client);
   ghClient.getPRInfo(owner, repo, number).
     then((prInfo) => {
-      console.info('## Contributors\n');
-      const rendered = [];
-      prInfo.commits.map((commit) => {
-        const user = commit.author.login;
-        if (rendered.includes(user) === false && user.trim() !== '') {
-          console.info(user);
-          rendered.push(user);
-        }
-      });
 
-      console.info('');
+      const templatePath = __dirname + '/release.ejs';
+      const template = fs.readFileSync(templatePath, 'utf8');
+      const body = ejs.render(template, { prInfo: prInfo });
+      console.info(body);
 
-      console.info('## Pull Requests\n');
-      prInfo.prs.map((pr) => {
-        const message = `#${pr.number} ${pr.title} by ${pr.user.login}`;
-        console.info(message);
-      });
     });
 };
 
 program.version('2.0.0').
-  usage('pr-summary <owner> <repo> <number>').
+  usage('<owner> <repo> <number>').
   action(prsummary);
 
 program.parse(process.argv);

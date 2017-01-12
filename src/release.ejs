@@ -1,15 +1,17 @@
 ## Contributors
+
 <%
-prInfo.contributors.forEach(function(contributor) { %>
+prInfo.contributors.forEach(function(contributor) { -%>
 - [ ] @<%= contributor %>
-<% }); %>
+<% }); -%>
 
 ## Merged Pull Requests
+
 <% prInfo.prs.forEach(function(pr) {
 var user = 'unknown';
 if (pr.user) {
   user = pr.user.login;
 }
-%>
+-%>
 - #<%= pr.number %> <%= pr.title %> by @<%= user %>
-<% }); %>
+<% }); -%>
