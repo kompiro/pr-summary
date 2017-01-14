@@ -1,12 +1,12 @@
 {
   "name": "pr-summary",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Summarize Pull Request",
   "main": "lib",
   "scripts": {
     "lint": "eslint",
     "prepublish": "rm -r lib;babel src -d lib --source-maps inline",
-    "js": "babel-node src/main.js",
+    "js": "node bin/prs",
     "test-js": "babel-node test.js",
     "test": "NODE_ENV=test mocha"
   },
@@ -19,10 +19,13 @@
     "Pull Request"
   ],
   "files": [
+    "bin",
     "lib"
   ],
   "bin": {
-    "pr-summary": "./lib/main.js"
+    "prs": "./bin/prs",
+    "prs-pr-info": "./bin/prs-pr-info",
+    "prs-prepare-release": "./bin/prs-prepare-release"
   },
   "author": "Hiroki Kondo",
   "license": "MIT",

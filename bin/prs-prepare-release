@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+'use strict';
+
+const program = require('commander');
+const GitHubAPI = require('github');
+const {GitHubClient} = require('../lib/github_client');
+
+const ejs = require('ejs');
+const fs = require('fs');
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+if (!GITHUB_TOKEN) {
+  console.error(
+    `You must set Environment Variable: GITHUB_TOKEN.
+Get the token at https://github.com/settings/tokens.`
+  );
+  process.exit(1);
+}
+
+const prepareRelease = (owner, repo, base, head) => {
+  const client = new GitHubAPI();
+
+  client.authenticate({
+    type: 'token',
+    token: GITHUB_TOKEN
+  });
+
+  const ghClient = new GitHubClient(client);
+  ghClient.prepareRelease(owner, repo, base, head).
+  then((pr) => {
+    console.info(`created: ${pr.html_url}`);
+  }).catch((err) => {
+    console.error(err.message);
+  });
+};
+
+program.
+  usage('<owner> <repo> <base> <head>').
+  action(prepareRelease);
+
+program.on('--help', () => {
+  console.info('  Arguments:');
+  console.info('');
+  console.info('    owner:  Repository owner');
+  console.info('    repo:   Repository name');
+  console.info('    base:   Base branch to merge [ex: master]');
+  console.info('    base:   Head branch to merge [ex: develop]');
+  console.info('');
+  console.info('  Example:');
+  console.info('');
+  console.info('    prs-prepare-release kompiro pr-summary master develop');
+});
+
+program.parse(process.argv);
+
+if(program.args.length < 4) {
+  program.help();
+}
+

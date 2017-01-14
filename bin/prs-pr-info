@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+'use strict';
+
+const program = require('commander');
+const GitHubAPI = require('github');
+const {GitHubClient} = require('../lib/github_client');
+
+const ejs = require('ejs');
+const fs = require('fs');
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+if (!GITHUB_TOKEN) {
+  console.error(
+    `You must set Environment Variable: GITHUB_TOKEN.
+Get the token at https://github.com/settings/tokens.`
+  );
+  process.exit(1);
+}
+
+const prinfo = (owner, repo, number) => {
+  const client = new GitHubAPI();
+
+  client.authenticate({
+    type: 'token',
+    token: GITHUB_TOKEN
+  });
+
+  const ghClient = new GitHubClient(client);
+  ghClient.getPRInfo(owner, repo, number).
+  then((prInfo) => {
+
+    const templatePath = __dirname + '/../src/release.ejs';
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const body = ejs.render(template, { prInfo: prInfo });
+    console.info(body);
+
+  });
+};
+
+program.
+  usage('<owner> <repo> <number>').
+  action(prinfo);
+
+program.on('--help', () => {
+  console.info('  Arguments:');
+  console.info('');
+  console.info('    owner:  Repository owner');
+  console.info('    repo:   Repository name');
+  console.info('    number: Pull Request number');
+  console.info('');
+  console.info('  Example:');
+  console.info('');
+  console.info('    prs-pr-info kompiro pr-summary 3');
+});
+
+program.parse(process.argv);
+
+if(program.args.length < 3) {
+  program.help();
+}
+
