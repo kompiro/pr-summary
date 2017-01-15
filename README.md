@@ -6,16 +6,76 @@
 
 ## Getting Started
 
-### Prerequisities
+### Prerequisites
 
-node.js 4.2.X.
+node.js 6.X.
 
-### Installing
+### Install
 
 1. This package provided as npm package. You can install this command by `npm install -g pr-summary`
 2. [Get your GitHub access token](https://github.com/settings/tokens).
 3. Set the access token as Environment Variable `GITHUB_TOKEN`
-4. `$ pr-summary <owner> <repo> <pr-number>`
+
+### Commands
+
+```shell
+ $ prs --help
+
+  Usage: prs [options] [command]
+
+  Commands:
+
+    prepare-release   Create to prepare release PR
+    pr-info           List PRs in specified PR
+    help [cmd]        display help for [cmd]
+
+  Options:
+
+    -h, --help     output usage information
+    -V, --version  output the version number
+```
+
+#### pr-info(default)
+
+```
+  Usage: prs pr-info <owner> <repo> <number>
+
+  Options:
+
+    -h, --help  output usage information
+
+  Arguments:
+
+    owner:  Repository owner
+    repo:   Repository name
+    number: Pull Request number
+
+  Example:
+
+    prs pr-info kompiro pr-summary 3
+```
+
+#### prepare-release
+
+```
+  Usage: prs prepare-release <owner> <repo> <base> <head>
+
+  Options:
+
+    -h, --help  output usage information
+
+  Arguments:
+
+    owner:  Repository owner
+    repo:   Repository name
+    base:   Base branch to merge [ex: master]
+    base:   Head branch to merge [ex: develop]
+
+  Example:
+
+    prs prepare-release kompiro pr-summary master develop
+```
+
 
 ## Running the tests
 
