@@ -29,7 +29,7 @@ const prinfo = (owner, repo, number) => {
   ghClient.getPRInfo(owner, repo, number).
   then((prInfo) => {
 
-    const templatePath = __dirname + '/../src/release.ejs';
+    const templatePath = __dirname + '/../templates/release.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const body = ejs.render(template, { prInfo });
     console.info(body);

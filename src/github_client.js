@@ -10,7 +10,7 @@ export class GitHubClient {
 
   constructor(client, template) {
     this.client = client;
-    this.templatePath = template || __dirname + '/release.ejs';
+    this.templatePath = template || __dirname + '../templates/release.ejs';
   }
 
   prepareRelease(owner, repo, base, head) {

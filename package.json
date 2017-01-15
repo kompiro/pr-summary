@@ -19,7 +19,8 @@
   ],
   "files": [
     "bin",
-    "lib"
+    "lib",
+    "templates"
   ],
   "bin": {
     "prs": "./bin/prs",
