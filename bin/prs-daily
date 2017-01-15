@@ -17,7 +17,13 @@ Get the token at https://github.com/settings/tokens.`
   process.exit(1);
 }
 
-const prinfo = (owner, repo, number) => {
+const daily = (owner, repo, user = 'mine', date = 'today') => {
+  if(typeof user === 'object') {
+    user = 'mine';
+  }
+  if (typeof date === 'object') {
+    date = 'today';
+  }
   const client = new GitHubAPI();
 
   client.authenticate({
@@ -26,31 +32,39 @@ const prinfo = (owner, repo, number) => {
   });
 
   const ghClient = new GitHubClient(client);
-  ghClient.getPRInfo(owner, repo, number).
-  then((prInfo) => {
+  ghClient.getDailyPRs(owner, repo, user, date).
+  then((prs) => {
 
-    const templatePath = __dirname + '/../src/release.ejs';
+    const templatePath = __dirname + '/../src/daily.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
-    const body = ejs.render(template, { prInfo });
+    const body = ejs.render(template, {
+      user,
+      date,
+      prs
+    });
     console.info(body);
 
+  }).
+  catch((error) => {
+    console.error(error);
   });
 };
 
 program.
-  usage('<owner> <repo> <number>').
-  action(prinfo);
+  usage('<owner> <repo> <user> [date]').
+  action(daily);
 
 program.on('--help', () => {
   console.info('  Arguments:');
   console.info('');
   console.info('    owner:  Repository owner');
   console.info('    repo:   Repository name');
-  console.info('    number: Pull Request number');
+  console.info('    user:   User name');
+  console.info('    date:   Filter to specify target date');
   console.info('');
   console.info('  Example:');
   console.info('');
-  console.info('    prs-pr-info kompiro pr-summary 3');
+  console.info('    prs-pr-daily kompiro pr-summary kompiro (today)');
 });
 
 program.parse(process.argv);
