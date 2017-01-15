@@ -20,6 +20,10 @@ module.exports = {
   prepareRelease: (config, owner, repo, base, head) => {
     const client = module.exports.createClient(config);
     return client.prepareRelease(owner, repo, base, head);
+  },
+  getDailyPRs: (config, owner, repo, user, date) => {
+    var client = module.exports.createClient(config);
+    return client.getDailyPRs(owner, repo, user, date);
   }
 };
 

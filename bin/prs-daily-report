@@ -17,7 +17,7 @@ Get the token at https://github.com/settings/tokens.`
   process.exit(1);
 }
 
-const daily = (owner, repo, user = 'mine', date = 'today') => {
+const dailyReport = (owner, repo, user = 'mine', date = 'today') => {
   if(typeof user === 'object') {
     user = 'mine';
   }
@@ -52,7 +52,7 @@ const daily = (owner, repo, user = 'mine', date = 'today') => {
 
 program.
   usage('<owner> <repo> <user> [date]').
-  action(daily);
+  action(dailyReport);
 
 program.on('--help', () => {
   console.info('  Arguments:');

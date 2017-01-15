@@ -76,10 +76,10 @@ node.js 6.X.
     prs prepare-release kompiro pr-summary master develop
 ```
 
-#### daily
+#### daily-report
 
 ```
-  Usage: prs-daily <owner> <repo> <user> [date]
+  Usage: prs-daily-report <owner> <repo> <user> [date]
 
   Options:
 
@@ -94,7 +94,7 @@ node.js 6.X.
 
   Example:
 
-    prs-pr-daily kompiro pr-summary kompiro (today)
+    prs-pr-daily-report kompiro pr-summary kompiro (today)
 ```
 
 
