@@ -76,10 +76,31 @@ node.js 6.X.
     prs prepare-release kompiro pr-summary master develop
 ```
 
+#### daily
+
+```
+  Usage: prs-daily <owner> <repo> <user> [date]
+
+  Options:
+
+    -h, --help  output usage information
+
+  Arguments:
+
+    owner:  Repository owner
+    repo:   Repository name
+    user:   User name
+    date:   Filter to specify target date
+
+  Example:
+
+    prs-pr-daily kompiro pr-summary kompiro (today)
+```
+
 
 ## Running the tests
 
-Currently this command doesn't contiain tests.
+`npm test`
 
 ### And coding style tests
 

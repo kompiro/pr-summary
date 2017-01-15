@@ -1,6 +1,6 @@
 {
   "name": "pr-summary",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "Summarize Pull Request",
   "main": "lib",
   "scripts": {
@@ -24,7 +24,8 @@
   "bin": {
     "prs": "./bin/prs",
     "prs-pr-info": "./bin/prs-pr-info",
-    "prs-prepare-release": "./bin/prs-prepare-release"
+    "prs-prepare-release": "./bin/prs-prepare-release",
+    "prs-daily": "./bin/prs-daily"
   },
   "author": "Hiroki Kondo",
   "license": "MIT",
