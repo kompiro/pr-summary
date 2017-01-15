@@ -35,7 +35,7 @@ const dailyReport = (owner, repo, user = 'mine', date = 'today') => {
   ghClient.getDailyPRs(owner, repo, user, date).
   then((prs) => {
 
-    const templatePath = __dirname + '/../src/daily.ejs';
+    const templatePath = __dirname + '/../templates/daily.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const body = ejs.render(template, {
       user,
