@@ -188,7 +188,7 @@ describe('GitHubClient', () => {
     });
 
     it ('returns prs', () => {
-      return sut.getDailyPRs('kompiro', 'awesome-app', 'user', '2017-01-08').then((result) => {
+      return sut.getDailyPRs('kompiro', 'awesome-app', {user: 'user', date: '2017-01-08'}).then((result) => {
         assert(result);
 
         assert.equal(result.filteredDate, '2017-01-08');

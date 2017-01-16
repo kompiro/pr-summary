@@ -130,12 +130,13 @@ export class GitHubClient {
     });
   }
 
-  getDailyPRs(owner, repo, user, date) {
+  getDailyPRs(owner, repo, opts) {
+    const fetchLength = opts.length ? opts.length : 300;
     return new Promise((resolve) => {
       const prs = [];
       const pager = (res) => {
         Array.prototype.push.apply(prs, res);
-        if (this.client.hasNextPage(res) && prs.length < 300) {
+        if (this.client.hasNextPage(res) && prs.length < fetchLength + 1) {
           return this.client.getNextPage(res).then(pager);
         }
         return prs;
@@ -148,6 +149,7 @@ export class GitHubClient {
         direction: 'desc',
         per_page: 100
       }).then(pager).then((prs)=>{
+        const date = opts.date;
         let targetDate = moment();
         if(date === 'yesterday') {
           targetDate = targetDate.subtract(1, 'days');
@@ -167,6 +169,7 @@ export class GitHubClient {
           }
         };
         prs.forEach((pr) => {
+          const user = opts.user;
           const isUpdatedDate = moment(pr.updated_at).format('YYYY-MM-DD') === filteredDate;
           const isAssigned = pr.assignee && user === pr.assignee.login;
           const isOwned = pr.user && user === pr.user.login;

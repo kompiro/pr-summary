@@ -17,11 +17,11 @@ Get the token at https://github.com/settings/tokens.`
   process.exit(1);
 }
 
-const dailyReport = (owner, repo, user = 'mine', date = 'today') => {
-  if(typeof user === 'object') {
-    user = 'mine';
-  }
+const dailyReport = (owner, repo, user, date = 'today') => {
+  let maxLength = 300;
   if (typeof date === 'object') {
+    const opts = date;
+    maxLength = opts.maxLength;
     date = 'today';
   }
   const client = new GitHubAPI();
@@ -32,7 +32,7 @@ const dailyReport = (owner, repo, user = 'mine', date = 'today') => {
   });
 
   const ghClient = new GitHubClient(client);
-  ghClient.getDailyPRs(owner, repo, user, date).
+  ghClient.getDailyPRs(owner, repo, {user: user, date: date, length: maxLength}).
   then((prs) => {
 
     const templatePath = __dirname + '/../templates/daily.ejs';
@@ -52,6 +52,7 @@ const dailyReport = (owner, repo, user = 'mine', date = 'today') => {
 
 program.
   usage('<owner> <repo> <user> [date]').
+  option('-m, --max-length <number>', 'fetched max pull request count').
   action(dailyReport);
 
 program.on('--help', () => {
