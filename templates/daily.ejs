@@ -1,0 +1,29 @@
+## <%= user %>'s Daily Report (<%= prs.filteredDate %>)
+
+### Owner
+
+<% prs.owner.closed.forEach(function(pr) {
+  var assignee = 'no assigned';
+  if (pr.assignee) {
+    assignee = pr.assignee.login;
+  }
+-%>
+- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>
+<% prs.owner.open.forEach(function(pr) {
+  var assignee = 'no assigned';
+  if (pr.assignee) {
+    assignee = pr.assignee.login;
+  }
+-%>
+- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>
+
+### Assignee
+
+<% prs.assigned.closed.forEach(function(pr) { -%>
+- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
+<% }); -%>
+<% prs.assigned.open.forEach(function(pr) { -%>
+- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
+<% }); -%>

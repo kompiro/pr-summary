@@ -35,11 +35,15 @@ describe('GitHubClient', () => {
   const ENTRY_POINT_OF_PULL_REQUESTS = '/repos/kompiro/awesome-app/pulls';
   const ENTRY_POINT_OF_PR_COMMITS = '/repos/kompiro/awesome-app/pulls/3/commits';
 
+  const nockHub = () => {
+    return nock(ENTRY_POINT_OF_GITHUB);
+  };
+
   describe('#getCommitsFromPullRequest', () => {
 
     context('no paging', () => {
       beforeEach(()=> {
-        nock(ENTRY_POINT_OF_GITHUB).
+        nockHub().
         get(ENTRY_POINT_OF_PR_COMMITS).
         reply(200, [
           { sha: 'sha0', author: {login: 'kompiro'} },
@@ -57,7 +61,7 @@ describe('GitHubClient', () => {
 
     context('have paging', () => {
       beforeEach(() => {
-        nock(ENTRY_POINT_OF_GITHUB).
+        nockHub().
         get(ENTRY_POINT_OF_PR_COMMITS).
         reply(200, [
           { sha: 'sha0' },
@@ -88,7 +92,7 @@ describe('GitHubClient', () => {
 
     context('pulls are not found', () => {
       beforeEach(() => {
-        nock(ENTRY_POINT_OF_GITHUB).
+        nockHub().
         get(ENTRY_POINT_OF_PULL_REQUESTS).
         query(true).
         reply(200, [
@@ -107,7 +111,7 @@ describe('GitHubClient', () => {
 
     context('pull is found', () => {
       beforeEach(() => {
-        nock(ENTRY_POINT_OF_GITHUB).
+        nockHub().
         get(ENTRY_POINT_OF_PULL_REQUESTS).
         query(true).
         reply(200, [
@@ -126,7 +130,7 @@ describe('GitHubClient', () => {
 
   describe('#getPRInfo', () => {
     beforeEach(() => {
-      nock(ENTRY_POINT_OF_GITHUB).
+      nockHub().
       get(ENTRY_POINT_OF_PR_COMMITS).
       reply(200, [
         { sha: 'sha0', author: {login: 'kompiro'} },
@@ -154,6 +158,44 @@ describe('GitHubClient', () => {
         assert.equal(prInfo.number, 3);
         assert.equal(prInfo.commits.length, 4);
         assert.equal(prInfo.prs.length, 2 );
+      });
+    });
+  });
+
+  describe('#getDailyPRs()', () => {
+    beforeEach(() => {
+      nockHub().
+      get(ENTRY_POINT_OF_PULL_REQUESTS).
+      query(true).
+      reply(200, [
+        {
+          number: 1,
+          head: {sha: 'sha0'},
+          merged_at: '2017-01-08T21:56:36+09:00',
+          updated_at: '2017-01-08T21:56:36+09:00',
+          user: {login: 'user'},
+          state: 'open'
+        },
+        {
+          number: 2,
+          head: {sha: 'sha3'},
+          merged_at: '2017-01-08T23:56:36+09:00',
+          updated_at: '2017-01-08T23:56:36+09:00',
+          assignee: {login: 'user'},
+          state: 'closed'
+        }
+      ]);
+    });
+
+    it ('returns prs', () => {
+      return sut.getDailyPRs('kompiro', 'awesome-app', {user: 'user', date: '2017-01-08'}).then((result) => {
+        assert(result);
+
+        assert.equal(result.filteredDate, '2017-01-08');
+        assert.equal(result.owner.open.length, 1);
+        assert.equal(result.owner.closed.length, 0);
+        assert.equal(result.assigned.open.length, 0);
+        assert.equal(result.assigned.closed.length, 1);
       });
     });
 

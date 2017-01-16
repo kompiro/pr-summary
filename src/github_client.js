@@ -4,6 +4,7 @@
 import 'babel-polyfill';
 import ejs from 'ejs';
 import fs from 'fs';
+import moment from 'moment';
 
 export class GitHubClient {
 
@@ -126,6 +127,74 @@ export class GitHubClient {
         catch((err)=> {
           console.error(err.message);
         });
+    });
+  }
+
+  getDailyPRs(owner, repo, opts) {
+    const fetchLength = opts.length ? opts.length : 300;
+    return new Promise((resolve) => {
+      const prs = [];
+      const pager = (res) => {
+        Array.prototype.push.apply(prs, res);
+        if (this.client.hasNextPage(res) && prs.length < fetchLength + 1) {
+          return this.client.getNextPage(res).then(pager);
+        }
+        return prs;
+      };
+      this.client.pullRequests.getAll({
+        owner,
+        repo,
+        state: 'all',
+        sort: 'updated',
+        direction: 'desc',
+        per_page: 100
+      }).then(pager).then((prs)=>{
+        const date = opts.date;
+        let targetDate = moment();
+        if(date === 'yesterday') {
+          targetDate = targetDate.subtract(1, 'days');
+        }else if(date !== 'today') {
+          targetDate = moment(date);
+        }
+        const filteredDate = targetDate.format('YYYY-MM-DD');
+        const resultPRs = {
+          filteredDate,
+          owner: {
+            open: [],
+            closed: []
+          },
+          assigned: {
+            open: [],
+            closed: []
+          }
+        };
+        prs.forEach((pr) => {
+          const user = opts.user;
+          const isUpdatedDate = moment(pr.updated_at).format('YYYY-MM-DD') === filteredDate;
+          const isAssigned = pr.assignee && user === pr.assignee.login;
+          const isOwned = pr.user && user === pr.user.login;
+
+          if(isUpdatedDate) {
+            if(isAssigned){
+              const assigned = resultPRs.assigned;
+              if(pr.state === 'open') {
+                assigned.open.push(pr);
+              } else {
+                assigned.closed.push(pr);
+              }
+            }
+            if(isOwned) {
+              const owner = resultPRs.owner;
+              if(pr.state === 'open') {
+                owner.open.push(pr);
+              } else {
+                owner.closed.push(pr);
+              }
+            }
+          }
+        });
+        resolve(resultPRs);
+      });
     });
   }
 }
