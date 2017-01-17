@@ -19,6 +19,12 @@ Get the token at https://github.com/settings/tokens.`
 
 const dailyReport = (owner, repo, user, date = 'today') => {
   let maxLength = 300;
+  if (typeof user === 'object') {
+    const opts = user;
+    maxLength = opts.maxLength;
+    user = 'all';
+    date = 'today';
+  }
   if (typeof date === 'object') {
     const opts = date;
     maxLength = opts.maxLength;
@@ -35,9 +41,11 @@ const dailyReport = (owner, repo, user, date = 'today') => {
   ghClient.getDailyPRs(owner, repo, {user: user, date: date, length: maxLength}).
   then((prs) => {
 
-    const templatePath = __dirname + '/../templates/daily.ejs';
+    const templatePath = user === 'all' ? __dirname + '/../templates/daily_all.ejs' : __dirname + '/../templates/daily.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
     const body = ejs.render(template, {
+      owner,
+      repo,
       user,
       date,
       prs
@@ -51,7 +59,7 @@ const dailyReport = (owner, repo, user, date = 'today') => {
 };
 
 program.
-  usage('<owner> <repo> <user> [date]').
+  usage('<owner> <repo> [user] [date]').
   option('-m, --max-length <number>', 'fetched max pull request count').
   action(dailyReport);
 
@@ -60,12 +68,12 @@ program.on('--help', () => {
   console.info('');
   console.info('    owner:  Repository owner');
   console.info('    repo:   Repository name');
-  console.info('    user:   User name');
-  console.info('    date:   Filter to specify target date');
+  console.info('    user:   User name(optional)');
+  console.info('    date:   Filter to specify target date(optional)');
   console.info('');
   console.info('  Example:');
   console.info('');
-  console.info('    prs-pr-daily kompiro pr-summary kompiro (today)');
+  console.info('    prs-pr-daily kompiro pr-summary (kompiro) (today)');
 });
 
 program.parse(process.argv);

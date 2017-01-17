@@ -187,7 +187,22 @@ describe('GitHubClient', () => {
       ]);
     });
 
-    it ('returns prs', () => {
+    it ('returns prs in the repo', () => {
+      return sut.getDailyPRs('kompiro', 'awesome-app', {user: 'all', date: '2017-01-08'}).then((result) => {
+        assert(result);
+
+        assert.equal(result.filteredDate, '2017-01-08');
+        assert.equal(result.all.open.length, 1);
+        assert.equal(result.all.merged.length, 1);
+        assert.equal(result.all.closed.length, 0);
+        assert.equal(result.owner.open.length, 0);
+        assert.equal(result.owner.closed.length, 0);
+        assert.equal(result.assigned.open.length, 0);
+        assert.equal(result.assigned.closed.length, 0);
+      });
+    });
+
+    it ('returns prs by specified user', () => {
       return sut.getDailyPRs('kompiro', 'awesome-app', {user: 'user', date: '2017-01-08'}).then((result) => {
         assert(result);
 
@@ -195,7 +210,8 @@ describe('GitHubClient', () => {
         assert.equal(result.owner.open.length, 1);
         assert.equal(result.owner.closed.length, 0);
         assert.equal(result.assigned.open.length, 0);
-        assert.equal(result.assigned.closed.length, 1);
+        assert.equal(result.assigned.merged.length, 1);
+        assert.equal(result.assigned.closed.length, 0);
       });
     });
 

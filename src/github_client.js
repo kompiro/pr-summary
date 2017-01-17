@@ -161,10 +161,17 @@ export class GitHubClient {
           filteredDate,
           owner: {
             open: [],
+            merged: [],
             closed: []
           },
           assigned: {
             open: [],
+            merged: [],
+            closed: []
+          },
+          all: {
+            open: [],
+            merged: [],
             closed: []
           }
         };
@@ -174,22 +181,26 @@ export class GitHubClient {
           const isAssigned = pr.assignee && user === pr.assignee.login;
           const isOwned = pr.user && user === pr.user.login;
 
+          const classifyState = (container ,pr) => {
+            if (pr.state === 'open') {
+              container.open.push(pr);
+            } else if (pr.merged_at) {
+              container.merged.push(pr);
+            } else {
+              container.closed.push(pr);
+            }
+          };
+
           if(isUpdatedDate) {
+            const all = resultPRs.all;
+            classifyState(all, pr);
             if(isAssigned){
               const assigned = resultPRs.assigned;
-              if(pr.state === 'open') {
-                assigned.open.push(pr);
-              } else {
-                assigned.closed.push(pr);
-              }
+              classifyState(assigned ,pr);
             }
             if(isOwned) {
               const owner = resultPRs.owner;
-              if(pr.state === 'open') {
-                owner.open.push(pr);
-              } else {
-                owner.closed.push(pr);
-              }
+              classifyState(owner ,pr);
             }
           }
         });
