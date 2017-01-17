@@ -1,6 +1,6 @@
 {
   "name": "pr-summary",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "description": "Summarize Pull Request",
   "main": "lib",
   "scripts": {
