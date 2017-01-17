@@ -1,0 +1,31 @@
+## <%= owner %>%>/<%= repo %> Daily Report (<%= prs.filteredDate %>)
+
+### Merged
+
+<% prs.all.merged.forEach(function(pr) {
+    var assignee = 'no assigned';
+    if (pr.assignee) {
+        assignee = pr.assignee.login;
+    }
+        -%>
+- #<%= pr.number %> [merged] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>
+
+### Updated
+
+<% prs.all.open.forEach(function(pr) {
+    var assignee = 'no assigned';
+    if (pr.assignee) {
+        assignee = pr.assignee.login;
+    }
+-%>
+- #<%= pr.number %> [open] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>
+<% prs.all.closed.forEach(function(pr) {
+    var assignee = 'no assigned';
+    if (pr.assignee) {
+    assignee = pr.assignee.login;
+    }
+-%>
+- #<%= pr.number %> [closed] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>

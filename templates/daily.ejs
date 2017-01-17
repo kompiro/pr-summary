@@ -2,13 +2,13 @@
 
 ### Owner
 
-<% prs.owner.closed.forEach(function(pr) {
+<% prs.owner.merged.forEach(function(pr) {
   var assignee = 'no assigned';
   if (pr.assignee) {
     assignee = pr.assignee.login;
   }
 -%>
-- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+- #<%= pr.number %> [merged] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
 <% }); -%>
 <% prs.owner.open.forEach(function(pr) {
   var assignee = 'no assigned';
@@ -16,14 +16,25 @@
     assignee = pr.assignee.login;
   }
 -%>
-- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+- #<%= pr.number %> [open] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
+<% }); -%>
+<% prs.owner.closed.forEach(function(pr) {
+  var assignee = 'no assigned';
+  if (pr.assignee) {
+    assignee = pr.assignee.login;
+  }
+        -%>
+- #<%= pr.number %> [closed] <%= pr.title %> by <%= pr.user.login %> assignee: <%= assignee %>
 <% }); -%>
 
 ### Assignee
 
-<% prs.assigned.closed.forEach(function(pr) { -%>
-- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
+<% prs.assigned.merged.forEach(function(pr) { -%>
+- #<%= pr.number %> [merged] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
 <% }); -%>
 <% prs.assigned.open.forEach(function(pr) { -%>
-- #<%= pr.number %> [<%= pr.state %>] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
+- #<%= pr.number %> [open] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
+<% }); -%>
+<% prs.assigned.closed.forEach(function(pr) { -%>
+- #<%= pr.number %> [closed] <%= pr.title %> by <%= pr.user.login %> assignee: <%= user %>
 <% }); -%>

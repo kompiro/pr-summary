@@ -79,7 +79,7 @@ node.js 6.X.
 #### daily-report
 
 ```
-  Usage: prs-daily-report <owner> <repo> <user> [date]
+  Usage: prs-daily-report <owner> <repo> [user] [date]
 
   Options:
 
@@ -89,8 +89,8 @@ node.js 6.X.
 
     owner:  Repository owner
     repo:   Repository name
-    user:   User name
-    date:   Filter to specify target date
+    user:   User name(optional)
+    date:   Filter to specify target date(optional)
 
   Example:
 
