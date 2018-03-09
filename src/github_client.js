@@ -59,24 +59,47 @@ export class GitHubClient {
     }).then(pager);
   }
 
-  fetchPullRequests(owner, repo, commits) {
+  static get MAX_FETCH_PRS() {
+    return 5000;
+  }
+
+  fetchPullRequests(owner, repo, prInfo) {
     return new Promise((resolve) => {
-      const shas = commits.map((commit) => {
+      const shas = prInfo.commits.map((commit) => {
         return commit.sha;
       });
+      const prs = [];
+      let headFound = false;
+      const pager = (res) => {
+        const mergeShas = res.map((pr) => {
+          return pr.merge_commit_sha;
+        });
+        const findHead = mergeShas.includes(prInfo.head_sha);
+        if (findHead) {
+          headFound = true;
+        }
+        Array.prototype.push.apply(prs, res);
+        const needNext = !headFound;
+        if (this.client.hasNextPage(res) && ( needNext || prs.length < this.MAX_FETCH_PRS)) {
+          return this.client.getNextPage(res).then(pager);
+        }
+        return prs;
+      };
       this.client.pullRequests.getAll({
         owner,
         repo,
+        base: prInfo.head, // マージしたPR
         state: 'closed',
         sort: 'updated',
         direction: 'desc',
         per_page: 100
-      }).then((prs) => {
+      }).then(pager).then((prs) => {
         const mergedPRs = prs.filter((pr) => {
           return pr.merged_at !== null;
         });
 
         const prsToDeploy = mergedPRs.reduce((result, pr) => {
+          // PRのハッシュが今回のデプロイPRのハッシュに含まれていたら追加
           if (shas.indexOf(pr.head.sha) !== -1) {
             result.push(pr);
           }
@@ -92,6 +115,27 @@ export class GitHubClient {
     });
   }
 
+  parseCommits(prInfo, commits) {
+    console.log(commits.length);
+    prInfo.commits = commits;
+    const contributors = [];
+    commits.map((commit) => {
+      let user;
+      const author = commit.author;
+      if (author) {
+        user = author.login;
+      } else {
+        const gitCommit = commit.commit;
+        user = gitCommit.author.name;
+      }
+      if (contributors.includes(user) === false && user.trim() !== '') {
+        contributors.push(user);
+      }
+    });
+    prInfo.contributors = contributors;
+    return prInfo;
+  }
+
   getPRInfo(owner, repo, number) {
     return new Promise((resolve) => {
       const prInfo = {
@@ -99,34 +143,35 @@ export class GitHubClient {
         repo,
         number
       };
-      this.getCommitsFromPullRequest(owner, repo, number).
-        then((commits) => {
-          prInfo.commits = commits;
-          const contributors = [];
-          commits.map((commit) => {
-            let user;
-            const author = commit.author;
-            if (author) {
-              user = author.login;
-            } else {
-              const gitCommit = commit.commit;
-              user = gitCommit.author.name;
-            }
-            if (contributors.includes(user) === false && user.trim() !== '') {
-              contributors.push(user);
-            }
-          });
-          prInfo.contributors = contributors;
-          return commits;
-        }).
-        then(this.fetchPullRequests.bind(this, owner, repo)).
-        then((prs) => {
-          prInfo.prs = prs;
-          resolve(prInfo);
-        }).
-        catch((err)=> {
-          console.error(err.message);
-        });
+      this.getPullRequest(prInfo).
+      then(() => {
+        return this.getCommitsFromPullRequest(owner, repo, number).
+          then(this.parseCommits.bind(this, prInfo));
+      }).
+      then(this.fetchPullRequests.bind(this, owner, repo)).
+      then((prs) => {
+        prInfo.prs = prs;
+        resolve(prInfo);
+      }).
+      catch((err)=> {
+        console.error(err.message);
+      });
+    });
+  }
+
+  getPullRequest(prInfo) {
+    return new Promise((resolve) => {
+      this.client.pullRequests.get({
+        owner: prInfo.owner,
+        repo: prInfo.repo,
+        number: prInfo.number
+      }).then((pullRequest) => {
+        prInfo.head = pullRequest.head.ref;
+        prInfo.head_sha = pullRequest.head.sha;
+        prInfo.base = pullRequest.base.ref;
+        prInfo.base_sha = pullRequest.base.sha;
+        resolve(prInfo);
+      });
     });
   }
 
