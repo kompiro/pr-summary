@@ -39,6 +39,7 @@
     "babel-polyfill": "^6.8.0",
     "commander": "^2.9.0",
     "ejs": "^2.5.2",
+    "lodash": "^4.17.5",
     "lokka": "^1.7.0",
     "lokka-transport-http": "^1.6.1",
     "moment": "^2.17.1"
