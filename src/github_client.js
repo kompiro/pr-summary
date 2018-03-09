@@ -8,8 +8,9 @@ import moment from 'moment';
 
 export class GitHubClient {
 
-  constructor(client, template) {
+  constructor(client, graphql, template) {
     this.client = client;
+    this.grahpql = graphql;
     this.templatePath = template || __dirname + '../templates/release.ejs';
   }
 
@@ -44,89 +45,42 @@ export class GitHubClient {
   }
 
   getCommitsFromPullRequest(owner, repo, number) {
-    const commits = [];
-    const pager = (res) => {
-      Array.prototype.push.apply(commits, res);
-      if (this.client.hasNextPage(res)) {
-        return this.client.getNextPage(res).then(pager);
-      }
-      return commits;
-    };
-    return this.client.pullRequests.getCommits({
-      owner,
-      repo,
-      number
-    }).then(pager);
+    return this.grahpql.getAllCommitsFrom(owner, repo, parseInt(number));
   }
 
-  fetchPullRequests(owner, repo, commits) {
+  static get MAX_FETCH_PRS() {
+    return 5000;
+  }
+
+  fetchPullRequests(owner, repo, prInfo) {
     return new Promise((resolve) => {
-      const shas = commits.map((commit) => {
-        return commit.sha;
+      const shas = prInfo.commits.map((commit) => {
+        return commit.oid;
       });
-      this.client.pullRequests.getAll({
-        owner,
-        repo,
-        state: 'closed',
-        sort: 'updated',
-        direction: 'desc',
-        per_page: 100
-      }).then((prs) => {
-        const mergedPRs = prs.filter((pr) => {
-          return pr.merged_at !== null;
+      this.grahpql.getPullRequests(owner, repo, prInfo.head, shas).then(
+        (prs) => {
+          const prsToDeploy = prs.pullRequests;
+
+          prsToDeploy.sort((a, b) => {
+            return new Date(a.merged_at) - new Date(b.merged_at);
+          });
+          prInfo.prs = prsToDeploy;
+
+          resolve(prInfo);
         });
-
-        const prsToDeploy = mergedPRs.reduce((result, pr) => {
-          if (shas.indexOf(pr.head.sha) !== -1) {
-            result.push(pr);
-          }
-          return result;
-        }, []);
-
-        prsToDeploy.sort((a, b) => {
-          return new Date(a.merged_at) - new Date(b.merged_at);
-        });
-
-        resolve(prsToDeploy);
-      });
     });
   }
 
   getPRInfo(owner, repo, number) {
     return new Promise((resolve) => {
-      const prInfo = {
-        owner,
-        repo,
-        number
-      };
       this.getCommitsFromPullRequest(owner, repo, number).
-        then((commits) => {
-          prInfo.commits = commits;
-          const contributors = [];
-          commits.map((commit) => {
-            let user;
-            const author = commit.author;
-            if (author) {
-              user = author.login;
-            } else {
-              const gitCommit = commit.commit;
-              user = gitCommit.author.name;
-            }
-            if (contributors.includes(user) === false && user.trim() !== '') {
-              contributors.push(user);
-            }
-          });
-          prInfo.contributors = contributors;
-          return commits;
-        }).
-        then(this.fetchPullRequests.bind(this, owner, repo)).
-        then((prs) => {
-          prInfo.prs = prs;
-          resolve(prInfo);
-        }).
-        catch((err)=> {
-          console.error(err.message);
-        });
+      then(this.fetchPullRequests.bind(this, owner, repo)).
+      then((prs) => {
+        resolve(prs);
+      }).
+      catch((err)=> {
+        console.error(err.message);
+      });
     });
   }
 

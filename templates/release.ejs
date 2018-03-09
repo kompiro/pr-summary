@@ -8,10 +8,7 @@ prInfo.contributors.forEach(function(contributor) { -%>
 ## Merged Pull Requests
 
 <% prInfo.prs.forEach(function(pr) {
-var user = 'unknown';
-if (pr.user) {
-  user = pr.user.login;
-}
+  var users = pr.participants.nodes.map((user) => '@' + user.login).join(', ')
 -%>
-- #<%= pr.number %> <%= pr.title %> by @<%= user %>
+- #<%= pr.number %> <%= pr.title %> by <%= users %>
 <% }); -%>

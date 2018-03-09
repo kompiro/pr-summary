@@ -2,7 +2,8 @@
 'use strict';
 
 import {GitHubClient} from './github_client';
-import GitHubAPI from 'github';
+import {GitHubGraphQL} from './github_graphql';
+import GitHubAPI from '@octokit/rest';
 
 module.exports = {
   createClient: (config) => {
@@ -11,7 +12,8 @@ module.exports = {
       type: 'token',
       token: config.token
     });
-    return new GitHubClient(client, config.template);
+    const graphql = new GitHubGraphQL(config.token);
+    return new GitHubClient(client, config.template, graphql);
   },
   getPRInfo: (config, owner, repo, number) => {
     const client = module.exports.createClient(config);

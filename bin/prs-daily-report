@@ -2,7 +2,8 @@
 'use strict';
 
 const program = require('commander');
-const GitHubAPI = require('github');
+const GitHubAPI = require('@octokit/rest');
+const {GitHubGraphQL} = require('../lib/github_graphql');
 const {GitHubClient} = require('../lib/github_client');
 
 const ejs = require('ejs');
@@ -37,7 +38,9 @@ const dailyReport = (owner, repo, user, date = 'today') => {
     token: GITHUB_TOKEN
   });
 
-  const ghClient = new GitHubClient(client);
+  const graphql = new GitHubGraphQL(GITHUB_TOKEN);
+
+  const ghClient = new GitHubClient(client, graphql);
   ghClient.getDailyPRs(owner, repo, {user: user, date: date, length: maxLength}).
   then((prs) => {
 
