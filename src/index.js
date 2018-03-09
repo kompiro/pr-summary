@@ -2,7 +2,7 @@
 'use strict';
 
 import {GitHubClient} from './github_client';
-import GitHubAPI from 'github';
+import GitHubAPI from '@octokit/rest';
 
 module.exports = {
   createClient: (config) => {
