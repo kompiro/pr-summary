@@ -16,6 +16,7 @@ export class GitHubClient {
 
   prepareRelease(owner, repo, base, head) {
     return new Promise((resolve, reject) => {
+      console.info(`prepareRelease: ${owner} ${repo} ${base} ${head}`);
       const title = `Prepare to deploy ${head} to ${base}`;
       return this.client.pullRequests.create({
         owner,
@@ -54,6 +55,7 @@ export class GitHubClient {
 
   fetchPullRequests(owner, repo, prInfo) {
     return new Promise((resolve) => {
+      console.info(`fetchPullRequests: ${owner} ${repo} ${prInfo}`);
       const shas = prInfo.commits.map((commit) => {
         return commit.oid;
       });
@@ -72,6 +74,7 @@ export class GitHubClient {
   }
 
   getPRInfo(owner, repo, number) {
+    console.info(`getPRInfo: ${owner} ${repo} ${number}`);
     return new Promise((resolve) => {
       this.getCommitsFromPullRequest(owner, repo, number).
       then(this.fetchPullRequests.bind(this, owner, repo)).
