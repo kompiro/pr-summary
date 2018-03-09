@@ -167,6 +167,7 @@ export class GitHubGraphQL {
 
   fetchAllPullRequests(promise, prs) {
     return promise.then(() => {
+      // PR の方は当該PRのマージコミットがPRのページに見つかったら取得する
       if (prs.rangeEnd) {
         return Promise.resolve(prs);
       }
