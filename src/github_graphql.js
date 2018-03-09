@@ -8,20 +8,6 @@ import { Transport } from 'lokka-transport-http';
 
 export class GitHubGraphQL {
 
-  static get TOTAL_COUNT_OF_COMMITS_QUERY() {
-    return `
-      query getAllCommitsCount($owner:String!, $repo:String!, $prNumber:Int!){
-        repository(owner:$owner name:$repo) {
-          pullRequest(number:$prNumber) {
-            commits() {
-              totalCount,
-            }
-          }
-        }
-      }
-    `;
-  }
-
   static get COMMITS_OF_PULL_REQUEST_QUERY() {
     return `
       query getAllCommit($owner:String!, $repo:String!, $prNumber:Int!, $perPage:Int!, $after:String!){
@@ -42,20 +28,17 @@ export class GitHubGraphQL {
                 oid
               }
             }
+            participants(first: 100){
+              nodes {
+                login
+              }
+            }
             commits(first:$perPage, after:$after) {
               edges {
                 cursor,
                 node {
                   commit {
-                    oid
-                    author {
-                      user {
-                        login
-                      }
-                    },
-                    committer {
-                      name
-                    },
+                    oid,
                     committedDate,
                     message,
                   }
@@ -68,6 +51,39 @@ export class GitHubGraphQL {
     `;
   }
 
+  static get PULL_REQUESTS_QUERY() {
+    return `
+      query($owner: String!, $repo: String!, $base: String!, $after: String) {
+        repository (owner: $owner, name: $repo){
+          pullRequests(
+            first: 100,
+            after: $after,
+            orderBy: { field: UPDATED_AT, direction: DESC },
+            baseRefName: $base,
+            states: MERGED) {
+            nodes {
+              number
+              title
+              mergeCommit {
+                oid
+              }
+              mergedAt
+              participants(first: 100) {
+                nodes {
+                  login
+                }
+              }
+            }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
+              startCursor
+              endCursor
+            }
+          }
+        }
+      }`;
+  }
 
   constructor(token) {
     const headers = {
@@ -80,8 +96,14 @@ export class GitHubGraphQL {
     });
   }
 
-  getAllCommitsFromPr(owner, repo, prNumber) {
-    return this.getTotalCommits(owner, repo, prNumber).then(this.fetchCommits.bind(this));
+  getAllCommitsFrom(owner, repo, prNumber) {
+    return this.fetchCommits({
+      owner,
+      repo,
+      prNumber,
+      commits: [],
+      cursor: ''
+    });
   }
 
   fetchCommits(prInfo) {
@@ -90,7 +112,8 @@ export class GitHubGraphQL {
 
   fetchAllCommits(promise, prInfo) {
     return promise.then(() => {
-      if (_.isUndefined(prInfo.cursor)) {
+      // 完了したら cursor は null になる
+      if (prInfo.cursor === null) {
         return Promise.resolve(prInfo);
       }
       return this.fetchAllCommits(this.fetchNextCommits(prInfo), prInfo);
@@ -114,38 +137,71 @@ export class GitHubGraphQL {
           prInfo.head_sha = pullRequest.headRef.target.oid;
           prInfo.base = pullRequest.baseRefName;
           prInfo.base_sha = pullRequest.baseRef.target.oid;
+          prInfo.contributors = pullRequest.participants.nodes.map((node) => node.login );
           const edges = pullRequest.commits.edges;
+          const fetchedCommits = edges.map((edge) => edge.node.commit );
           const lastEdge = _.last(edges);
           prInfo.cursor = lastEdge ? lastEdge.cursor : null;
-          prInfo.commits = _.union(
-            prInfo.commits,
-            _.map(edges, edge => {
-              return edge.node.commit;
-            })
-          );
+          prInfo.commits = _.union( prInfo.commits, fetchedCommits );
           resolve(prInfo);
         });
     });
   }
 
-  getTotalCommits(owner, repo, prNumber) {
+  getPullRequests(owner, repo, base, shas) {
+    return this.fetchPullRequests({
+      owner,
+      repo,
+      base,
+      shas,
+      rangeStart: false,
+      rangeEnd: false,
+      pullRequests: [],
+      cursor: null
+    });
+  }
+
+  fetchPullRequests(prs) {
+    return this.fetchAllPullRequests(Promise.resolve(prs), prs);
+  }
+
+  fetchAllPullRequests(promise, prs) {
+    return promise.then(() => {
+      if (prs.rangeEnd) {
+        return Promise.resolve(prs);
+      }
+      return this.fetchAllPullRequests(this.fetchNextPullRequests(prs), prs);
+    });
+  }
+
+  fetchNextPullRequests(prs) {
     return new Promise((resolve) => {
       const vars = {
-        owner: owner,
-        repo: repo,
-        prNumber: prNumber
+        owner: prs.owner,
+        repo: prs.repo,
+        base: prs.base,
+        after: prs.cursor ? prs.cursor : null
       };
       return this.client
-        .query(GitHubGraphQL.TOTAL_COUNT_OF_COMMITS_QUERY, vars)
+        .query(GitHubGraphQL.PULL_REQUESTS_QUERY, vars)
         .then(result => {
-          const prInfo = Object.assign({}, vars, {
-            totalCount: result.repository.pullRequest.commits.totalCount,
-            commits: [],
-            cursor: ''
+          const pullRequests = result.repository.pullRequests;
+          const nodes = pullRequests.nodes;
+          const shas = prs.shas;
+          prs.cursor = pullRequests.pageInfo.endCursor;
+          const mergedPRs = _.filter(nodes, (node) => {
+            return node.mergeCommit && shas.includes(node.mergeCommit.oid);
           });
-          resolve(prInfo);
+          if(mergedPRs.length > 0) {
+            prs.pullRequests = _.union( prs.pullRequests, mergedPRs);
+            prs.rangeStart = true;
+          } else {
+            if(prs.rangeStart) {
+              prs.rangeEnd = true;
+            }
+          }
+          resolve(prs);
         });
     });
   }
-  
 }

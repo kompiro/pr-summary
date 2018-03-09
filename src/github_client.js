@@ -45,7 +45,7 @@ export class GitHubClient {
   }
 
   getCommitsFromPullRequest(owner, repo, number) {
-    return this.grahpql.getAllCommitsFromPr(owner, repo, parseInt(number));
+    return this.grahpql.getAllCommitsFrom(owner, repo, parseInt(number));
   }
 
   static get MAX_FETCH_PRS() {
@@ -57,88 +57,26 @@ export class GitHubClient {
       const shas = prInfo.commits.map((commit) => {
         return commit.oid;
       });
-      const prs = [];
-      let headFound = false;
-      const pager = (res) => {
-        const fetchedPRs = res.data;
-        const mergeShas = fetchedPRs.map((pr) => {
-          return pr.merge_commit_sha;
-        });
-        const findHead = mergeShas.includes(prInfo.head_sha);
-        if (findHead) {
-          headFound = true;
-        }
-        Array.prototype.push.apply(prs, fetchedPRs);
-        const needNext = !headFound;
-        if (this.client.hasNextPage(res) && ( needNext || prs.length < GitHubClient.MAX_FETCH_PRS)) {
-          return this.client.getNextPage(res).then(pager);
-        }
-        return prs;
-      };
-      this.client.pullRequests.getAll({
-        owner,
-        repo,
-        base: prInfo.head, // マージしたPR
-        state: 'closed',
-        sort: 'updated',
-        direction: 'desc',
-        per_page: 100
-      }).then(pager).then((prs) => {
-        console.log(prs);
-        const mergedPRs = prs.filter((pr) => {
-          return pr.merged_at !== null;
-        });
+      this.grahpql.getPullRequests(owner, repo, prInfo.head, shas).then(
+        (prs) => {
+          const prsToDeploy = prs.pullRequests;
 
-        const prsToDeploy = mergedPRs.reduce((result, pr) => {
-          // PRのハッシュが今回のデプロイPRのハッシュに含まれていたら追加
-          if (shas.indexOf(pr.head.sha) !== -1) {
-            result.push(pr);
-          }
-          return result;
-        }, []);
+          prsToDeploy.sort((a, b) => {
+            return new Date(a.merged_at) - new Date(b.merged_at);
+          });
+          prInfo.prs = prsToDeploy;
 
-        prsToDeploy.sort((a, b) => {
-          return new Date(a.merged_at) - new Date(b.merged_at);
+          resolve(prInfo);
         });
-
-        resolve(prsToDeploy);
-      });
     });
-  }
-
-  parseCommits(prInfo) {
-    const commits = prInfo.commits;
-    const contributors = [];
-    commits.map((commit) => {
-      let user;
-      const author = commit.author;
-      if (author) {
-        user = author.user.login;
-      } else {
-        const gitCommit = commit.commiter;
-        user = gitCommit.author.name;
-      }
-      if (contributors.includes(user) === false && user.trim() !== '') {
-        contributors.push(user);
-      }
-    });
-    prInfo.contributors = contributors;
-    return Promise.resolve(prInfo);
   }
 
   getPRInfo(owner, repo, number) {
     return new Promise((resolve) => {
-      const prInfo = {
-        owner,
-        repo,
-        number
-      };
       this.getCommitsFromPullRequest(owner, repo, number).
-      then(this.parseCommits).
       then(this.fetchPullRequests.bind(this, owner, repo)).
       then((prs) => {
-        prInfo.prs = prs;
-        resolve(prInfo);
+        resolve(prs);
       }).
       catch((err)=> {
         console.error(err.message);
