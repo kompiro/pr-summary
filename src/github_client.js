@@ -11,11 +11,12 @@ export class GitHubClient {
   constructor(client, graphql, template) {
     this.client = client;
     this.grahpql = graphql;
-    this.templatePath = template || __dirname + '../templates/release.ejs';
+    this.templatePath = template || __dirname + '/../templates/release.ejs';
   }
 
   prepareRelease(owner, repo, base, head) {
     return new Promise((resolve, reject) => {
+      console.info(`prepareRelease: ${owner} ${repo} ${base} ${head}`);
       const title = `Prepare to deploy ${head} to ${base}`;
       return this.client.pullRequests.create({
         owner,
@@ -23,8 +24,9 @@ export class GitHubClient {
         title,
         head,
         base
-      }).then((pr) => {
-        return this.getPRInfo(owner, repo, pr.number);
+      }).then((res) => {
+        const pr = res.data;
+        return this.getPRInfo(owner, repo, parseInt(pr.number));
       }).then((prInfo) => {
         const template = fs.readFileSync(this.templatePath, 'utf8');
         const body = ejs.render(template, { prInfo: prInfo });
@@ -32,9 +34,10 @@ export class GitHubClient {
           owner,
           repo,
           base,
-          number: prInfo.number,
+          number: prInfo.prNumber,
           body
-        }).then((pr) => {
+        }).then((res) => {
+          const pr = res.data;
           pr.commits = prInfo.commits;
           pr.contributors = prInfo.contributors;
           pr.prs = prInfo.prs;
@@ -54,6 +57,7 @@ export class GitHubClient {
 
   fetchPullRequests(owner, repo, prInfo) {
     return new Promise((resolve) => {
+      console.info(`fetchPullRequests: ${owner} ${repo} ${prInfo}`);
       const shas = prInfo.commits.map((commit) => {
         return commit.oid;
       });
@@ -72,6 +76,7 @@ export class GitHubClient {
   }
 
   getPRInfo(owner, repo, number) {
+    console.info(`getPRInfo: ${owner} ${repo} ${number}`);
     return new Promise((resolve) => {
       this.getCommitsFromPullRequest(owner, repo, number).
       then(this.fetchPullRequests.bind(this, owner, repo)).
@@ -102,7 +107,8 @@ export class GitHubClient {
         sort: 'updated',
         direction: 'desc',
         per_page: 100
-      }).then(pager).then((prs)=>{
+      }).then(pager).then((res)=>{
+        const prs = res.data;
         const date = opts.date;
         let targetDate = moment();
         if(date === 'yesterday') {

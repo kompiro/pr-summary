@@ -44,7 +44,7 @@ program.on('--help', () => {
   console.info('    owner:  Repository owner');
   console.info('    repo:   Repository name');
   console.info('    base:   Base branch to merge [ex: master]');
-  console.info('    base:   Head branch to merge [ex: develop]');
+  console.info('    head:   Head branch to merge [ex: develop]');
   console.info('');
   console.info('  Example:');
   console.info('');

@@ -31,6 +31,7 @@ const prinfo = (owner, repo, number) => {
   const ghClient = new GitHubClient(client, graphql);
   ghClient.getPRInfo(owner, repo, number).
   then((prInfo) => {
+    console.info(prInfo.prNumber);
 
     const templatePath = __dirname + '/../templates/release.ejs';
     const template = fs.readFileSync(templatePath, 'utf8');
