@@ -2,7 +2,8 @@
 'use strict';
 
 const program = require('commander');
-const GitHubAPI = require('github');
+const GitHubAPI = require('@octokit/rest');
+const {GitHubGraphQL} = require('../lib/github_graphql');
 const {GitHubClient} = require('../lib/github_client');
 
 const ejs = require('ejs');
@@ -25,7 +26,9 @@ const prepareRelease = (owner, repo, base, head) => {
     token: GITHUB_TOKEN
   });
 
-  const ghClient = new GitHubClient(client);
+  const graphql = new GitHubGraphQL(GITHUB_TOKEN);
+
+  const ghClient = new GitHubClient(client, graphql);
   ghClient.prepareRelease(owner, repo, base, head).
   then((pr) => {
     console.info(`created: ${pr.html_url}`);
