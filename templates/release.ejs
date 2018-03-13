@@ -1,4 +1,4 @@
-## Contributors
+## Contributor
 
 <%
 prInfo.contributors.forEach(function(contributor) { -%>
@@ -9,7 +9,7 @@ prInfo.contributors.forEach(function(contributor) { -%>
 
 <% prInfo.prs.forEach(function(pr) {
   var decorator = function(user) {
-    return user.login ? ('@' + user.login) : 'leaved user';
+    return user.login ? ('@' + user.login) : 'left user';
   };
   var author = pr.author ? pr.author : {};
   var participants = pr.participants.nodes.filter( function(participant){
