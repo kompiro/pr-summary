@@ -1,4 +1,4 @@
-## Contributors
+## Contributor
 
 <%
 prInfo.contributors.forEach(function(contributor) { -%>
@@ -8,7 +8,13 @@ prInfo.contributors.forEach(function(contributor) { -%>
 ## Merged Pull Requests
 
 <% prInfo.prs.forEach(function(pr) {
-  var users = pr.participants.nodes.map((user) => '@' + user.login).join(', ')
+  var decorator = function(user) {
+    return user.login ? ('@' + user.login) : 'left user';
+  };
+  var author = pr.author ? pr.author : {};
+  var participants = pr.participants.nodes.filter( function(participant){
+     return participant.login !== author.login;
+  }).map((user) => decorator(user)).join(', ');
 -%>
-- #<%= pr.number %> <%= pr.title %> by <%= users %>
+- #<%= pr.number %> <%= pr.title %> by author: <%= decorator(author) %> participants: <%= participants %>
 <% }); -%>

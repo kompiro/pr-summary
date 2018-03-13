@@ -67,6 +67,9 @@ export class GitHubGraphQL {
               mergeCommit {
                 oid
               }
+              author {
+                login
+              }
               mergedAt
               participants(first: 100) {
                 nodes {
