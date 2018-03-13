@@ -13,7 +13,7 @@ module.exports = {
       token: config.token
     });
     const graphql = new GitHubGraphQL(config.token);
-    return new GitHubClient(client, config.template, graphql);
+    return new GitHubClient(client, graphql, config.template);
   },
   getPRInfo: (config, owner, repo, number) => {
     const client = module.exports.createClient(config);
