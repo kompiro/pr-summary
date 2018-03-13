@@ -8,10 +8,13 @@ prInfo.contributors.forEach(function(contributor) { -%>
 ## Merged Pull Requests
 
 <% prInfo.prs.forEach(function(pr) {
+  var decorator = function(user) {
+    return user.login ? ('@' + user.login) : 'leaved user';
+  };
   var author = pr.author ? pr.author : {};
   var participants = pr.participants.nodes.filter( function(participant){
      return participant.login !== author.login;
-  }).map((user) => '@' + user.login).join(', ');
+  }).map((user) => decorator(user)).join(', ');
 -%>
-- #<%= pr.number %> <%= pr.title %> by author: @<%= author.login %> participants: <%= participants %>
+- #<%= pr.number %> <%= pr.title %> by author: <%= decorator(author) %> participants: <%= participants %>
 <% }); -%>
